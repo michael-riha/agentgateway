@@ -1,4 +1,42 @@
 
+> [!WARNING]  
+> This is a very rudimentary project and setup. 
+> It is not working as expected yet!
+> - `agentgateway` does not yet route to MCP `everything` contianer, yet!
+
+> [!CAUTION]
+> Only view this as a WORK IN PROGRESS and educational exercise. 
+
+# `agentgateway` Docker compose setup
+
+this project (`compose.yaml`) includes:
+  - `agentgateway`
+    - for general purpose to gain knowhow
+      - ✅ got it working with AWS Bedrock
+      - TODOs:
+        - learn more how to use MCPs
+        - route `echo` plain HTTP as gateway
+        - try an openAPI server 
+        - ... find time⏳️
+  - `tzolov/mcp-everything-server:v2` 
+    - for testing with an external MCP **❌ NOT WORKING**
+  - `ghcr.io/modelcontextprotocol/inspector`
+    - for inspecting and debugging MCP interactions ✅
+  - `echo`
+    - for debugging and output of HTTP interaction via the gateway
+
+
+
+---
+
+# `aws` `bedrock` for `LLM`-routing
+
+- [add config](https://github.com/michael-riha/agentgateway/blob/69b8b6e9c30d1f29594d686382dd63a834bb61be/services_configs/agentgateway/config%20copy.yaml#L21-L33)
+- [for the `aws`-credentials:
+  - [either via ENV-vars (preferred)](https://github.com/michael-riha/agentgateway/blob/69b8b6e9c30d1f29594d686382dd63a834bb61be/.env.example#L3-L5)
+  - [or by mapping the `~/.aws` to the container](https://github.com/michael-riha/agentgateway/blob/69b8b6e9c30d1f29594d686382dd63a834bb61be/compose.yaml#L11)
+
+## A simple Request to the LLM Model via proxy
 
 ```
 curl 'http://0.0.0.0:3000/' --header 'Content-Type: application/json' --data ' {
@@ -12,9 +50,6 @@ curl 'http://0.0.0.0:3000/' --header 'Content-Type: application/json' --data ' {
 }
 '
 ```
-
-
-
 Still even works with an empty model 🤷‍♂️
 ```
 curl 'http://0.0.0.0:3000/' --header 'Content-Type: application/json' --data ' {
@@ -29,7 +64,11 @@ curl 'http://0.0.0.0:3000/' --header 'Content-Type: application/json' --data ' {
 '
 ```
 
-## Use the ` inspector` 
+## Using the ` inspector` 
+
+> [!NOTE] 
+> I did not yet succeed with MCP over `agentgateway` so for debuggign I just used
+> `inspector` (needs to be on host network mode) <-> `everything`-server
 
 Browser: `http://localhost:6274/` (host networking mode, otherwise it doesn't work)
 - http://localhost:3001/mcp (streamable)
