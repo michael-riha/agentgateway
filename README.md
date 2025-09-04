@@ -31,10 +31,11 @@ this project (`compose.yaml`) includes:
 
 # `aws` `bedrock` for `LLM`-routing
 
-- [add config](https://github.com/michael-riha/agentgateway/blob/69b8b6e9c30d1f29594d686382dd63a834bb61be/services_configs/agentgateway/config%20copy.yaml#L21-L33)
-- [for the `aws`-credentials:
-  - [either via ENV-vars (preferred)](https://github.com/michael-riha/agentgateway/blob/69b8b6e9c30d1f29594d686382dd63a834bb61be/.env.example#L3-L5)
-  - [or by mapping the `~/.aws` to the container](https://github.com/michael-riha/agentgateway/blob/69b8b6e9c30d1f29594d686382dd63a834bb61be/compose.yaml#L11)
+- [add config](./services_configs/agentgateway/ai-config.yaml#L15-L25)
+  - OR/AND enable this config in the [compose.yaml](./compose.yaml#L16) file
+- for the `aws`-credentials:
+  - [either via ENV-vars (preferred)](./env.example#L3-L5)
+  - [or by mapping the `~/.aws` to the container](./compose.yaml#L11)
 
 ## A simple Request to the LLM Model via proxy
 

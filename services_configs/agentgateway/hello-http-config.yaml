@@ -1,0 +1,41 @@
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTP
+    name: echo Listener
+    routes:
+    - matches:
+      - path:
+          pathPrefix: /echo
+        method: GET
+      backends:
+      - host: host.docker.internal:8080
+      name: echo-example
+    - backends:
+      - host: echo:8080
+      name: policy-example
+      policies:
+        cors:
+          allowHeaders:
+          - header
+          allowOrigins:
+          - '*'
+          allowCredentials: true
+          allowMethods:
+          - GET
+          exposeHeaders:
+          - header2
+        requestHeaderModifier:
+          add:
+            x-req-added: value
+        responseHeaderModifier:
+          set:
+            x-res-added: value
+    - matches:
+      - path:
+          pathPrefix: /hello
+      name: direct-response
+      policies:
+        directResponse:
+          body: hello!
+          status: 200

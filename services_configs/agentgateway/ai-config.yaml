@@ -1,0 +1,25 @@
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTP
+    name: echo Listener
+    routes:
+    - matches:
+      - path:
+          pathPrefix: /
+      name: direct-response
+      policies:
+        directResponse:
+          body: hello!
+          status: 200
+    - hostnames: []
+      matches:
+      - path:
+          pathPrefix: /bedrock
+      backends:
+      - ai:
+          provider:
+            bedrock:
+              model: anthropic.claude-3-5-sonnet-20240620-v1:0
+              region: us-west-2
+      name: bedrock

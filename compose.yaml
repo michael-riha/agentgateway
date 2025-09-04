@@ -7,12 +7,15 @@ services:
       - 3000:3000
       - 15000:15000
     volumes:
-      - ./services_configs/agentgateway/config.yaml:/app/config.yaml
+      - ./services_configs/agentgateway:/app/configs
       # - /home/michael/.aws:/root/.aws #WORKS
     environment:
       - ADMIN_ADDR=0.0.0.0:15000 # https://github.com/agentgateway/agentgateway/pull/165
     env_file: ".env"
-    command: -f /app/config.yaml
+    command: -f /app/configs/hello-http-config.yaml
+    # command: -f /app/configs/ai-config.yaml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   mcp-everything:
     image: tzolov/mcp-everything-server:v2 # By default runs in streamableHttp mode - https://github.com/tzolov/mcp-everything-server-docker-image/tree/main
     command: ["node", "dist/index.js", "sse"]
