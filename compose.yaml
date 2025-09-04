@@ -1,0 +1,33 @@
+# include:
+#   - ./xyz.yaml
+services:
+  agentgateway:
+    image: ghcr.io/agentgateway/agentgateway
+    ports:
+      - 3000:3000
+      - 15000:15000
+    volumes:
+      - ./services_configs/agentgateway/config.yaml:/app/config.yaml
+      # - /home/michael/.aws:/root/.aws #WORKS
+    environment:
+      - ADMIN_ADDR=0.0.0.0:15000 # https://github.com/agentgateway/agentgateway/pull/165
+    env_file: ".env"
+    command: -f /app/config.yaml
+  mcp-everything:
+    image: tzolov/mcp-everything-server:v2 # By default runs in streamableHttp mode - https://github.com/tzolov/mcp-everything-server-docker-image/tree/main
+    command: ["node", "dist/index.js", "sse"]
+    ports:
+      - 3001:3001
+    # entrypoint: ["executable", "arg"]
+  mcp-inspector:
+    image: ghcr.io/modelcontextprotocol/inspector:latest
+    network_mode: "host" # https://docs.docker.com/reference/compose-file/services/#network_mode
+    environment:
+      -  DANGEROUSLY_OMIT_AUTH=true
+    ports: 
+      - 6274:6274
+      - 6277:6277
+  echo:
+    image: jmalloc/echo-server
+    ports: 
+      - "8080:8080"

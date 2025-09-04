@@ -1,0 +1,90 @@
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - mcp:
+          targets:
+          - mcp:
+              host: mcpbin.is.solo.io
+              path: /remote/mcp
+              port: 443
+            name: mcpbin
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - mcp-protocol-version
+          - content-type
+          - cache-control
+    - hostnames: []
+      matches:
+      - path:
+          pathPrefix: /bedrock
+      backends:
+      - ai:
+          name: bedrock
+          provider:
+            bedrock:
+              region: us-west-2
+              model: anthropic.claude-3-5-sonnet-20240620-v1:0
+      name: bedrock route
+      ruleName: bedrock rule
+    - hostnames: []
+      matches:
+      - path:
+          pathPrefix: /everything
+      backends:
+      - mcp:
+          targets:
+          - name: everything
+            sse:
+              host: host.docker.internal
+              port: 3001
+              path: /sse
+          statefulMode: stateful
+      name: everything-route
+      ruleName: everything-rule
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - mcp-protocol-version
+          - content-type
+          - cache-control
+          exposeHeaders:
+          - X-Agentgateway
+    - hostnames: []
+      matches:
+      - path:
+          pathPrefix: /echo
+      backends:
+      - mcp:
+          targets:
+          - name: echo
+            sse:
+              host: host.docker.internal
+              port: 8080
+              path: /sse
+          statefulMode: stateful
+      name: echo-route
+      ruleName: echo-rule
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - mcp-protocol-version
+          - content-type
+          - cache-control
+          exposeHeaders:
+          - X-Agentgateway
+    - hostnames: []
+      matches:
+      - path:
+          pathPrefix: /echo-http
+      backends: []
+      name: echo-http
+      ruleName: echo-http-rule
