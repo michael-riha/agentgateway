@@ -19,17 +19,69 @@ this project (`compose.yaml`) includes:
         - try an openAPI server 
         - ... find time⏳️
   - `tzolov/mcp-everything-server:v2` 
-    - for testing with an external MCP **❌ NOT WORKING**
+    - for testing with an external MCP ✅
   - `ghcr.io/modelcontextprotocol/inspector`
     - for inspecting and debugging MCP interactions ✅
   - `echo`
     - for debugging and output of HTTP interaction via the gateway
+  - ☝️**mcp-server** (`source code` [& dedicated `compose.yaml`](./compose.yaml#L1-L2))
+    - a custom MCP Server example in `python` to be called over `agentgateway`
+    - 👀 into the `./src`-folder it includes a custom MCP Server example <br><br> 
+    A standalone tool for testing and debugging as well as an example Graph using LangGraph.
+---
 
+## Terminology
 
+> In LangGraph, you are building a graph (the application). <br>
+> The nodes are connected by edges (the transitions between steps).
+> This graph is composed of nodes (the steps).
+> One or more of these nodes can themselves be agents (intelligent, looping subsystems). 
+> The graph is the boss that manages the agents and other workers.
+
+### My Rule of Thumb
+
+> If the node contains an LLM that is empowered to make decisions in a loop (typically using tools), it is an **agent node**. 
+> If the node uses an LLM for a single, deterministic task, it's just an **"LLM" node**.
+> If it has no LLM at all, it's a **function node**.
 
 ---
 
-# `aws` `bedrock` for `LLM`-routing
+# Usage
+
+` docker compose up`
+
+## Exploring:
+
+- http://localhost:6274/ (the MCP Inspector)
+  - as URL you can use:
+    - http://localhost:3000/graph (over the gateway)
+    - http://localhost:8000/mcp (direct call the MCP Server)
+  - Press **▶️ Connect**
+    - goto: http://localhost:6274/#tools & Click "List Tools"
+    - 👀 at the tools
+- http://localhost:15000/ui (agentgateway UI)
+  - goto: http://localhost:15000/ui/playground/
+    - select a Route (MCP) & connect
+    - see all Tools available
+
+## Debugging & Learning
+
+- Connect the VSC Debugger [*Python: Remote Attach to Graph Client*](./.vscode/launch.json#L22) to the `graph`-service (`./src/compose.yaml`)
+  - set Breakpoints
+  - watch the Graph being executed
+    - Uses `agentgateway` for LLM calls over `aws Bedrock`
+    - Uses the local MCP-Server examples for testing and debugging
+
+### All works as expected if ...
+
+```bash
+... 
+graph-1           | Tool calls: None
+graph-1           | Response content: 8
+...
+```
+
+## `aws` `bedrock` for `LLM`-routing
 
 - [add config](./services_configs/agentgateway/ai-config.yaml#L15-L25)
   - OR/AND enable this config in the [compose.yaml](./compose.yaml#L16) file
@@ -40,7 +92,7 @@ this project (`compose.yaml`) includes:
 ## A simple Request to the LLM Model via proxy
 
 ```
-curl 'http://0.0.0.0:3000/' --header 'Content-Type: application/json' --data ' {
+curl 'http://0.0.0.0:3000/bedrock' --header 'Content-Type: application/json' --data ' {
   "model": "anthropic.claude-3-5-sonnet-20240620-v1:0",
   "messages": [
     {
@@ -53,7 +105,7 @@ curl 'http://0.0.0.0:3000/' --header 'Content-Type: application/json' --data ' {
 ```
 Still even works with an empty model 🤷‍♂️
 ```
-curl 'http://0.0.0.0:3000/' --header 'Content-Type: application/json' --data ' {
+curl 'http://0.0.0.0:3000/bedrock' --header 'Content-Type: application/json' --data ' {
   "model": "",
   "messages": [
     {

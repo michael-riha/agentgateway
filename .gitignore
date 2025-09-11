@@ -1,1 +1,2 @@
 .env
+src/mcp_server/data/graphs/*.png

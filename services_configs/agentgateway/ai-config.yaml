@@ -23,3 +23,46 @@ binds:
               model: anthropic.claude-3-5-sonnet-20240620-v1:0
               region: us-west-2
       name: bedrock
+    - matches:
+      - path:
+          pathPrefix: /graph
+      policies:
+        cors:
+          allowOrigins:
+          - "*"
+          allowHeaders:
+          - "*"
+        # strip-path
+        urlRewrite:
+          path:
+            prefix: ''
+      backends:
+      - mcp:
+          targets:
+          - name: mcp-server
+            mcp:
+              host: mcp-server
+              port: 8000
+              path: /mcp
+    - matches:
+      - path:
+          pathPrefix: /ui
+      policies:
+        cors:
+          allowOrigins:
+          - "*"
+          allowHeaders:
+          - "*"
+        # strip-path
+        urlRewrite:
+          path:
+            prefix: ''
+      backends:
+      - mcp:
+          targets:
+          - name: ui
+            mcp:
+              host: localhost
+              port: 15000
+              path: /ui
+

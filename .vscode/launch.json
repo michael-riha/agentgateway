@@ -1,0 +1,73 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Remote Attach to MCP Server",
+      "type": "python",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/src/mcp_server",
+          "remoteRoot": "/app"
+        }
+      ],
+      "justMyCode": false,
+      "redirectOutput": true,
+      "logToFile": true
+    },
+      {
+      "name": "Python: Remote Attach to Graph Client",
+      "type": "python",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5679
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/src/mcp_server",
+          "remoteRoot": "/app"
+        }
+      ],
+      "justMyCode": false,
+      "redirectOutput": true,
+      "logToFile": true
+    },
+    {
+      "name": "Docker: Compose Up",
+      "type": "docker",
+      "request": "launch",
+      "composeFile": "${workspaceFolder}/src/compose.yaml",
+      "up": {
+        "daemon": false,
+        "build": true
+      },
+      "down": {
+        "removeVolumes": true,
+        "removeImages": "none"
+      }
+    },
+    {
+      "name": "Python: Run Tests",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/tests/test_server.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Docker Compose + Debug Server",
+      "configurations": ["Docker: Compose Up", "Python: Remote Attach to MCP Server"],
+      "stopAll": true
+    }
+  ]
+}

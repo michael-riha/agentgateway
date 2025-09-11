@@ -1,0 +1,57 @@
+services:
+  mcp-server:
+    image: local-mcp-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5678:5678"  # Debugpy port
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - MCP_URL=http://localhost:8000/mcp
+    env_file: .env
+    volumes:
+      - ./mcp_server:/app  # Mount source code for development
+    # entrypoint:  python server.py
+    entrypoint: |
+      sh -c '
+      echo "Starting entrypoint script"
+      if [ "$$DEBUGPY_WAIT" = true ]; then
+        echo "Please attach the VSC Debugger 🛑"
+        # For the wait-for-client version, use -- as follows:
+        watchmedo auto-restart --directory=/app --pattern='*.py' --ignore-pattern='*.pyc' --recursive -- python -m debugpy --listen 0.0.0.0:5678 --wait-for-client server.py
+      else
+        echo "Start without a waiting Debugger"
+        # For the non-waiting version:
+        watchmedo auto-restart --directory=/app --pattern='*.py' --ignore-pattern='*.pyc' --recursive -- python -m debugpy --listen 0.0.0.0:5678 server.py
+      fi
+      '
+  graph:
+    image: local-mcp-server
+    depends_on:  [mcp-server]
+    environment:
+      - DEBUGPY_WAIT=true
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - ./mcp_server:/app  # Mount source code for development
+    entrypoint: |
+      sh -c '
+      echo "Starting entrypoint script"
+      if [ "$$DEBUGPY_WAIT" = true ]; then
+        echo "Please attach the VSC Debugger 🛑"
+        # For the wait-for-client version, use -- as follows:
+        watchmedo auto-restart --directory=/app --pattern='*.py' --ignore-pattern='*.pyc' --recursive -- python -m debugpy --listen 0.0.0.0:5679 --wait-for-client agent.py
+      else
+        echo "Start without a waiting Debugger"
+        # For the non-waiting version:
+        watchmedo auto-restart --directory=/app --pattern='*.py' --ignore-pattern='*.pyc' --recursive -- python -m debugpy --listen 0.0.0.0:5679 agent.py
+      fi
+      '
+    ports:
+      - "5679:5679"  # Debugpy port
+

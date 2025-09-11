@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/local.json
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        cors:
+          allowOrigins:
+          - "*"
+          allowHeaders:
+          - "*"
+        # strip-path
+        urlRewrite:
+          path:
+            prefix: ''
+      backends:
+      - mcp:
+          targets:
+          - name: mcp-server
+            mcp:
+              host: mcp-server
+              port: 8000
+              path: /mcp
