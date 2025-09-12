@@ -12,11 +12,12 @@ services:
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
       - MCP_URL=http://localhost:8000/mcp
+      - LLM_URL=http://agentgateway:3000/ollama/v1
     env_file: .env
     volumes:
       - ./mcp_server:/app  # Mount source code for development
     # entrypoint:  python server.py
-    entrypoint: |
+    command: |
       sh -c '
       echo "Starting entrypoint script"
       if [ "$$DEBUGPY_WAIT" = true ]; then
@@ -37,9 +38,10 @@ services:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
+      - LLM_URL=http://agentgateway:3000/ollama/v1 #over chatOpenAI API -> https://www.reddit.com/r/LangChain/comments/1ldoir0/comment/mybc3qd/
     volumes:
       - ./mcp_server:/app  # Mount source code for development
-    entrypoint: |
+    command: |
       sh -c '
       echo "Starting entrypoint script"
       if [ "$$DEBUGPY_WAIT" = true ]; then

@@ -15,6 +15,28 @@ binds:
     - hostnames: []
       matches:
       - path:
+          pathPrefix: /ollama
+      policies:
+        # strip-path
+        urlRewrite:
+          path:
+            prefix: ''
+        # urlRewrite:
+        #   authority:
+        #     full: ollama.server
+        #   path:
+        #     full: "v1/chat/completions"
+      backends:
+      - ai:
+          name: ollama
+          hostOverride: ollama.server:11434
+          provider:
+            openAI:
+              model: llama3.1 # deepseek-r1:1.5b
+      name: ollama
+    - hostnames: []
+      matches:
+      - path:
           pathPrefix: /bedrock
       backends:
       - ai:
@@ -44,25 +66,21 @@ binds:
               host: mcp-server
               port: 8000
               path: /mcp
-    - matches:
-      - path:
-          pathPrefix: /ui
-      policies:
-        cors:
-          allowOrigins:
-          - "*"
-          allowHeaders:
-          - "*"
-        # strip-path
-        urlRewrite:
-          path:
-            prefix: ''
-      backends:
-      - mcp:
-          targets:
-          - name: ui
-            mcp:
-              host: localhost
-              port: 15000
-              path: /ui
+    # - matches:
+    #   - path:
+    #       pathPrefix: /ui
+    #   policies:
+    #     cors:
+    #       allowOrigins:
+    #       - "*"
+    #       allowHeaders:
+    #       - "*"
+    #     # strip-path
+    #     urlRewrite:
+    #       path:
+    #         prefix: ''
+    #   backends:
+    #   - host: 127.0.0.1
+    #     port: 15000
+    #     path: /ui
 

@@ -1,18 +1,24 @@
+from typing import TypedDict
 
-from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import HumanMessage
-from typing import TypedDict, List
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
+from langgraph.graph import END, START, StateGraph
+
 
 class AgentState(TypedDict):
-    messages: List
+    messages: list
+
 
 def fake_llm_node(state: AgentState):
     """Simple LangGraph node for demonstration"""
     last_message = state["messages"][-1]
     if isinstance(last_message, HumanMessage):
-        return {"messages": [AIMessage(content=f"I received your message: {last_message.content}")]}
+        return {
+            "messages": [
+                AIMessage(content=f"I received your message: {last_message.content}")
+            ]
+        }
     return {"messages": [AIMessage(content="I'm not sure how to process that")]}
+
 
 # Build LangGraph workflow
 builder = StateGraph(AgentState)

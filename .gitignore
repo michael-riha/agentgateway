@@ -1,2 +1,4 @@
 .env
 src/mcp_server/data/graphs/*.png
+services_configs/ollama/data/**
+!services_configs/ollama/data/.gitkeep

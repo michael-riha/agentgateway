@@ -11,3 +11,6 @@ pydantic==2.11
 python-dotenv==1.0.0
 
 watchdog
+
+#for tests
+-r requirements-dev.txt

@@ -117,6 +117,48 @@ curl 'http://0.0.0.0:3000/bedrock' --header 'Content-Type: application/json' --d
 '
 ```
 
+## ` ollama` 
+
+```bash
+curl http://localhost:7869/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.1",
+    "messages": [
+      {"role": "user", "content": "Which LLM Model are you?"}
+    ],
+    "stream": false
+  }'
+```
+
+
+## `agentgateway`
+
+```bash
+curl http://localhost:3000/ollama/api/chat \
+  -H "Content-Type: application/json"  \
+  -d '{
+    "model": "llama3.1",
+    "messages": [
+      {"role": "user", "content": "Which LLM Model are you?"}
+    ],
+    "stream": false
+  }'
+```
+
+### OpenAI compatible
+```bash
+curl http://localhost:3000/ollama/v1/chat/completions \
+  -H "Content-Type: application/json"  \
+  -d '{
+    "model": "llama3.1",
+    "messages": [
+      {"role": "user", "content": "Which LLM Model are you?"}
+    ],
+    "stream": false
+  }'
+```
+
 ## Using the ` inspector` 
 
 > [!NOTE] 

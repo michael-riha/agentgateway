@@ -1,32 +1,38 @@
-from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, START, END
-from langgraph.runtime import Runtime
-from typing import TypedDict, List, Any, Callable, Dict, Annotated
-from langchain_core.messages import HumanMessage, AIMessage,ToolMessage, convert_to_openai_messages
-import asyncio
-from langchain_core.tools import Tool
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langgraph.prebuilt import ToolNode
 import os
+from typing import Any, TypedDict
+
+from langchain_core.messages import (
+    AIMessage,
+    ToolMessage,
+    convert_to_openai_messages,
+)
+from langchain_core.tools import Tool
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, StateGraph
+from langgraph.prebuilt import ToolNode
+from langgraph.runtime import Runtime
+
 from utils.listener import MyCustomHandler
 
 LLM_URL = os.environ.get("LLM_URL", "http://agentgateway:3000/bedrock")
 MCP_URL = os.environ.get("MCP_URL", "http://agentgateway:3000/graph")
 
+
 # State class with proper typing
 class AgentState(TypedDict):
-    messages: List
-    initial_prompt: List
+    messages: list
+    initial_prompt: list
+
 
 class Context(TypedDict):
     llm: Any  # Using Any for flexibility
     toolNode: ToolNode
-    tools: List[Tool]
+    tools: list[Tool]
+
 
 # Setup function that can be awaited as the MCP Client is async
 async def setup_tools_async():
     from langchain_mcp_adapters.client import MultiServerMCPClient
-    from langgraph.prebuilt import ToolNode
     client = MultiServerMCPClient(
         {
             "math": {
@@ -36,28 +42,30 @@ async def setup_tools_async():
         }
     )
     # Initialize the MCP tool
-    tools = await client.get_tools()  
-    # print(f"Tools: {tools}")
-    # For testing, use the standalone add tool
-    # from tools.standalone import add
-    # tools = [add]
-    # Create the tool node
-    tool_node = ToolNode(tools)
-    return tool_node, tools
+    tools = await client.get_tools()
+    # add another Standalone Tool next to remote MCP Server
+    from tools.standalone import prefix
+    tools.append(prefix)
+    return tools
+
 
 # Async node function that uses the pre-initialized components
 async def agent_node(state: AgentState, runtime: Runtime[Context]) -> AgentState:
     llm = runtime.context.get("llm", None)
     # The convert_to_openai_messages utility function can be used to convert from LangChain messages to OpenAI format.
-    oai_messages = {
-        "messages": convert_to_openai_messages(state["initial_prompt"])
-    }
+    oai_messages = {"messages": convert_to_openai_messages(state["initial_prompt"])}
     # Use the pre-initialized agent
     print("Agent input:", oai_messages)
     response = await llm.ainvoke(state["initial_prompt"])
     print("Response type:", response.type if hasattr(response, "type") else "unknown")
-    print("Tool calls:", response.tool_calls if hasattr(response, "tool_calls") else "none")
-    print("Response content:", response.content if hasattr(response, "content") else str(response))
+    print(
+        "Tool calls:",
+        response.tool_calls if hasattr(response, "tool_calls") else "none",
+    )
+    print(
+        "Response content:",
+        response.content if hasattr(response, "content") else str(response),
+    )
 
     # Check if the response has tool calls
     if not hasattr(response, "tool_calls") or not response.tool_calls:
@@ -66,13 +74,12 @@ async def agent_node(state: AgentState, runtime: Runtime[Context]) -> AgentState
     return {"messages": state["messages"]}  # Return updated history
 
 
-
 # Tool node function
 async def tool_node(state: AgentState, runtime: Runtime[Context]) -> AgentState:
     # Get the last message (which should have tool calls)
     last_message = state["messages"][-1]
     tool_node = runtime.context.get("toolNode")
-    
+
     # Create a proper input for the tool node
     if not hasattr(last_message, "tool_calls") and isinstance(last_message, dict):
         # If it's a dict with tool_calls field
@@ -85,22 +92,27 @@ async def tool_node(state: AgentState, runtime: Runtime[Context]) -> AgentState:
     else:
         # If it's already a message object with tool_calls
         tool_input = {"messages": [last_message]}
-    
+
     # Debug output to see what we're sending
     print(f"Tool input: {tool_input}")
-    
+
     # Execute the tool
     tool_result = await tool_node.ainvoke(tool_input)
-    
+
     # Add the tool result to messages
     if "messages" in tool_result and tool_result["messages"]:
         state["messages"].append(tool_result["messages"][-1])
     else:
         print(f"Warning: Unexpected tool result format: {tool_result}")
         # Create a default tool message if needed
-        state["messages"].append(ToolMessage(content="Tool execution completed but returned unexpected format"))
-    
+        state["messages"].append(
+            ToolMessage(
+                content="Tool execution completed but returned unexpected format"
+            )
+        )
+
     return {"messages": state["messages"]}
+
 
 # Route function to decide what to do next
 def should_call_tool(state: AgentState) -> str:
@@ -117,7 +129,7 @@ def should_call_tool(state: AgentState) -> str:
     # Check if the agent wants to use tools
     has_tool_calls = hasattr(last_message, "tool_calls") and last_message.tool_calls
     print(f"DEBUG: Has tool calls: {has_tool_calls}")
-    
+
     if has_tool_calls:
         print("DEBUG: Routing to 'tools'")
         return "tools"
@@ -125,31 +137,38 @@ def should_call_tool(state: AgentState) -> str:
         print("DEBUG: Routing to 'end'")
         return "end"
 
+
 async def get_components():
-    # Initialize ChatOpenAI to use AgentGateway    
+    # Initialize ChatOpenAI to use AgentGateway
     llm = ChatOpenAI(
         model="gpt-4o",  # Use a dummy model name; AgentGateway handles routing
         base_url=LLM_URL,  # AgentGateway endpoint
         api_key="sk-dummy",  # Dummy key (if required)
         temperature=0,
-        callbacks=[MyCustomHandler()] #add a Listener to the LLM Agent
+        callbacks=[MyCustomHandler()],  # add a Listener to the LLM Agent
     )
-    tool_node, tools= await setup_tools_async()
-    return tool_node, llm, tools
+    tools = await setup_tools_async()
+    return llm, tools
+
 
 # Build LangGraph workflow
 builder = StateGraph(AgentState, context_schema=Context)
 builder.add_node("agent", agent_node)
 builder.add_node("tools", tool_node)
 builder.add_edge(START, "agent")
-builder.add_conditional_edges("agent", should_call_tool, {
-    "tools": "tools",
-    "end": END,
-    "agent": "agent"  # Allow looping back to agent if needed
-})
-builder.add_conditional_edges("tools", should_call_tool, {
-    "end": END,
-    "agent": "agent"  # Allow looping back to agent if needed
-})
+builder.add_conditional_edges(
+    "agent",
+    should_call_tool,
+    {
+        "tools": "tools",
+        "end": END,
+        "agent": "agent",  # Allow looping back to agent if needed
+    },
+)
+builder.add_conditional_edges(
+    "tools",
+    should_call_tool,
+    {"end": END, "agent": "agent"},  # Allow looping back to agent if needed
+)
 graph = builder.compile()
 graph.get_graph().draw_mermaid_png(output_file_path="./data/graphs/graph.png")

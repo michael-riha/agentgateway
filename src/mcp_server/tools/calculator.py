@@ -1,13 +1,15 @@
-from mcp.server.fastmcp import FastMCP
 import math
+
+from mcp.server.fastmcp import FastMCP
+
 
 def setup_calculator_tools(mcp: FastMCP):
     """Setup calculator tools as shown in the article"""
-    
+
     @mcp.tool()
     def add(a: int, b: int) -> int:
         """Add two numbers"""
-        print(f'called add-calculator-MCPTool with {a}+ {b}')
+        print(f"called add-calculator-MCPTool with {a}+ {b}")
         return a + b
 
     @mcp.tool()
@@ -30,7 +32,7 @@ def setup_calculator_tools(mcp: FastMCP):
     @mcp.tool()
     def power(a: int, b: int) -> int:
         """Power of two numbers"""
-        return a ** b
+        return a**b
 
     @mcp.tool()
     def sqrt(a: int) -> float:

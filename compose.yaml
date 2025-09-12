@@ -37,3 +37,27 @@ services:
     image: jmalloc/echo-server
     ports: 
       - "8080:8080"
+  
+  ollama:
+    image: docker.io/ollama/ollama:latest
+    hostname: ollama.server
+    ports:
+      - 7869:11434
+    volumes:
+      - .:/code
+      - ./services_configs/ollama/data:/root/.ollama
+    # entrypoint: ["/bin/sh", "-c", "echo 'Hello Ollama Server' && ollama serve & ollama run llama3.1] # start from another model if needed https://ollama.com/search
+    container_name: ollama
+    restart: always
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_DEBUG=1
+  # ollama-model:
+  #   image: docker.io/ollama/ollama:latest
+  #   command: pull deepseek-r1:1.5b
+  #   volumes:
+  #     - ./services_configs/ollama/data:/root/.ollama
+  #   depends_on:
+  #     - ollama
+  #   # other configuration...

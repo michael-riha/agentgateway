@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies
-COPY mcp_server/requirements.txt .
+COPY mcp_server/requirements .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy server code
