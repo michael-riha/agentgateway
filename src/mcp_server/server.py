@@ -1,6 +1,9 @@
 from langchain_core.messages import HumanMessage
 from mcp.server.fastmcp import FastMCP
 
+from utils.logger import setup_logger
+
+logger = setup_logger(__name__)
 # Initialize MCP server
 mcp = FastMCP("Math Server", host="0.0.0.0", port=8000)
 
@@ -40,5 +43,6 @@ if __name__ == "__main__":
     # For testing the agentgateway_llm function directly
     from langchain.globals import set_verbose
 
+    logger.info("Starting MCP Server with streamable-http transport")  # Added logging
     set_verbose(True)
     mcp.run(transport="streamable-http")

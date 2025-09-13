@@ -2,6 +2,10 @@ import math
 
 from mcp.server.fastmcp import FastMCP
 
+from utils.logger import setup_logger
+
+logger = setup_logger(__name__)
+
 
 def setup_calculator_tools(mcp: FastMCP):
     """Setup calculator tools as shown in the article"""
@@ -9,9 +13,12 @@ def setup_calculator_tools(mcp: FastMCP):
     @mcp.tool()
     def add(a: int, b: int) -> int:
         """Add two numbers"""
-        print(f"called add-calculator-MCPTool with {a}+ {b}")
+        logger.info(
+            "Called add-calculator-MCPTool with %s + %s", a, b
+        )  # Changed from print
         return a + b
 
+    # Other calculator functions remain unchanged
     @mcp.tool()
     def subtract(a: int, b: int) -> int:
         """Subtract two numbers"""

@@ -17,5 +17,8 @@ docker compose run --rm $SERVICE_NAME ruff check .
 # TODO: too exhausting to fix for now!
 # echo "Type checking with mypy..."
 # docker compose run --rm $SERVICE_NAME mypy --install-types .
-
 echo "All formatting completed!"
+
+# most containers are root:root so we need to fix this for the IDE to still be writeable
+echo "Ensure proper permissions for all files after container run"
+sudo chmod 777 -R ./

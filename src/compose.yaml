@@ -39,6 +39,7 @@ services:
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
       - LLM_URL=http://agentgateway:3000/ollama/v1 #over chatOpenAI API -> https://www.reddit.com/r/LangChain/comments/1ldoir0/comment/mybc3qd/
+    env_file: .env
     volumes:
       - ./mcp_server:/app  # Mount source code for development
     command: |

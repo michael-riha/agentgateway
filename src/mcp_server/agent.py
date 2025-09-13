@@ -3,15 +3,21 @@ import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from graphs.graph import get_components, graph
+from utils.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 
-async def agent_setup_and_execution(input_text: str = "can you prefix the word 'michael'") -> str:
+async def agent_setup_and_execution(
+    input_text: str = "can you prefix the word 'michael'",
+) -> str:
     """Process text using LangGraph workflow"""
     llm, tools = await get_components()
     llm_with_tools = llm.bind_tools(tools)
-    
+
     # Create the tool node
     from langgraph.prebuilt import ToolNode
+
     tool_node = ToolNode(tools)
     # Define your system message
     system_message = """You are a helpful assistant that uses tools for all operations.
@@ -34,12 +40,18 @@ async def agent_setup_and_execution(input_text: str = "can you prefix the word '
     final_message = result.get("messages", [])[-1] if result.get("messages") else None
 
     if final_message:
-        print("Response type:", getattr(final_message, "type", "Unknown"))
-        print("Tool calls:", getattr(final_message, "tool_calls", None))
-        print("Response content:", getattr(final_message, "content", "No content"))
+        logger.info(
+            "Response type: %s", getattr(final_message, "type", "Unknown")
+        )  # Changed from print
+        logger.info(
+            "Tool calls: %s", getattr(final_message, "tool_calls", None)
+        )  # Changed from print
+        logger.info(
+            "Response content: %s", getattr(final_message, "content", "No content")
+        )  # Changed from print
         return final_message.content
     else:
-        print("No final message in result:", result)
+        logger.warning("No final message in result: %s", result)  # Changed from print
         return result
 
 
