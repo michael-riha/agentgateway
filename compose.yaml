@@ -53,6 +53,7 @@ services:
       - OLLAMA_KEEP_ALIVE=24h
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_DEBUG=1
+    profiles: [ollama]
   # ollama-model:
   #   image: docker.io/ollama/ollama:latest
   #   command: pull deepseek-r1:1.5b

@@ -1,15 +1,15 @@
 
-> [!WARNING]  
+<!-- > [!WARNING]  
 > This is a very rudimentary project and setup. 
 > It is not working as expected yet!
-> - `agentgateway` does not yet route to MCP `everything` contianer, yet!
+-->
 
 > [!CAUTION]
 > Only view this as a WORK IN PROGRESS and educational exercise. 
 
 # `agentgateway` Docker compose setup
 
-this project (`compose.yaml`) includes:
+Project (`compose.yaml`) includes:
   - `agentgateway`
     - for general purpose to gain knowhow
       - ✅ got it working with AWS Bedrock
@@ -27,7 +27,11 @@ this project (`compose.yaml`) includes:
   - ☝️**mcp-server** (`source code` [& dedicated `compose.yaml`](./compose.yaml#L1-L2))
     - a custom MCP Server example in `python` to be called over `agentgateway`
     - 👀 into the `./src`-folder it includes a custom MCP Server example <br><br> 
-    A standalone tool for testing and debugging as well as an example Graph using LangGraph.
+    A standalone tool (['prefix'](./src/mcp_server/tools/standalone.py)) for testing and debugging as well as an example Graph using LangGraph.
+  - `LLM`s in two variants
+    - [`ollama` to locally host](./compose.yaml#L41)
+    - `aws` Bedrock to use cloud-hosted models
+
 ---
 
 ## Terminology
@@ -46,11 +50,32 @@ this project (`compose.yaml`) includes:
 
 ---
 
-# Usage
+# Run it
 
-` docker compose up`
+- with `aws bedrock`
+  - fill in all `AWS_*`-vars from `.env.example` <br>
+  & rename it to `.env`
+  - [pick a matching `agentgateway`-config.yaml](./services_configs/agentgateway/)
+    - [reference the config in the `compose.yaml`](./compose.yaml#L18)
+    - `docker compose up`
+<br><br>
 
-## Exploring:
+- with local LLM `ollama`
+  - fetch a model for tools (`llama3.1`) <br>
+    - get the Server up <br>
+    `docker compose run -d ollama `
+    - enter the container <br>
+    `docker compose exec ollama bash`
+    - inside pull a model <br>
+    `# ollama pull llama3.1` ⏳️
+    - `# exit`
+    - `docker compose down ollama --remove-orphans`
+    - adapt varts from `.env.example` <br>
+  & rename it to `.env`
+    - `docker compose --profile ollama up`
+
+
+## Explore it
 
 - http://localhost:6274/ (the MCP Inspector)
   - as URL you can use:
@@ -63,6 +88,16 @@ this project (`compose.yaml`) includes:
   - goto: http://localhost:15000/ui/playground/
     - select a Route (MCP) & connect
     - see all Tools available
+
+## `invoke` a Graph in `langgraph` via MCP
+
+There are two tools that are not Tools but Graphs/Agents you can run/invoke
+Use either http://localhost:15000/ui/playground/ or http://localhost:6274/ (URL: http://localhost:8000/mcp or http://localhost:3000/graph)
+
+  - `simple_langgraph`–Process text using LangGraph workflow
+  - `execute_graph`–Run example Graph over MCP
+
+OR 👇️
 
 ## Debugging & Learning
 
@@ -80,6 +115,13 @@ graph-1           | Tool calls: None
 graph-1           | Response content: 8
 ...
 ```
+
+# 🏁
+
+# Now let's talk about variants of the setup:
+
+- `agentgateway` vs. without
+- `aws` `bedrock` vs. [bundled local `ollama`](./compose.yaml#L41)
 
 ## `aws` `bedrock` for `LLM`-routing
 
